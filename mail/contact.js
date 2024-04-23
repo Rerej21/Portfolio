@@ -1,65 +1,41 @@
 $(function () {
+    $("#contactForm").submit(function (event) {
+        event.preventDefault(); // Prevent default form submission
 
-    $("#contactForm input, #contactForm textarea").jqBootstrapValidation({
-        preventSubmit: false,
-        submitError: function ($form, event, errors) {
-        },
-        submitSuccess: function ($form, event) {
-            // event.preventDefault();
-            var name = $("input#name").val();
-            var email = $("input#email").val();
-            var subject = $("input#subject").val();
-            var message = $("textarea#message").val();
+        var $submitButton = $("#sendMessageButton");
+        $submitButton.prop("disabled", false); // Disable the submit button during AJAX request
 
-            $this = $("#sendMessageButton");
-            $this.prop("disabled", true);
+        var formData = $(this).serialize(); // Serialize form data
 
-            $.ajax({
-                url: "contact.php", // Assuming contact.php is the PHP script to handle the form submission
-                type: "POST",
-                data: {
-                    name: name,
-                    email: email,
-                    subject: subject,
-                    message: message
-                },
-                cache: false,
-                success: function () {
-                    $('#success').html("<div class='alert alert-success'>");
-                    $('#success > .alert-success').html("<button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;")
-                            .append("</button>");
-                    $('#success > .alert-success')
-                            .append("<strong>Your message has been sent. </strong>");
-                    $('#success > .alert-success')
-                            .append('</div>');
-                    $('#contactForm').trigger("reset");
-                },
-                error: function () {
-                    $('#success').html("<div class='alert alert-danger'>");
-                    $('#success > .alert-danger').html("<button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;")
-                            .append("</button>");
-                    $('#success > .alert-danger').append($("<strong>").text("Sorry " + name + ", it seems that our mail server is not responding. Please try again later!"));
-                    $('#success > .alert-danger').append('</div>');
-                    $('#contactForm').trigger("reset");
-                },
-                complete: function () {
-                    setTimeout(function () {
-                        $this.prop("disabled", false);
-                    }, 1000);
-                }
-            });
-        },
-        filter: function () {
-            return $(this).is(":visible");
-        },
+        $.ajax({
+            url: "contact.php",
+            type: "POST",
+            data: formData,
+            success: function () {
+                // Success message handling
+                $('#success').html("<div class='alert alert-success'>Your message has been sent.</div>");
+                $('#contactForm').trigger("reset");
+            },
+            error: function () {
+                // Error message handling
+                $('#success').html("<div class='alert alert-danger'>Sorry, it seems that our mail server is not responding. Please try again later!</div>");
+            },
+            complete: function () {
+                // Re-enable submit button after AJAX request completes
+                setTimeout(function () {
+                    $submitButton.prop("disabled", false);
+                }, 1000);
+            }
+        });
     });
 
-    $("a[data-toggle=\"tab\"]").click(function (e) {
+    $("a[data-toggle='tab']").click(function (e) {
         e.preventDefault();
         $(this).tab("show");
     });
-});
 
-$('#name').focus(function () {
-    $('#success').html('');
+    // Clear success message on focus
+    $('#name, #email, #subject, #message').focus(function () {
+        $('#success').html('');
+    });
 });
